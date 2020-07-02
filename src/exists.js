@@ -53,7 +53,23 @@ function getWebpackConfig(fromDir) {
 function getWebpackAliases(webpackConfigPath) {
   const webpackConfig = getWebpackConfig(webpackConfigPath);
 
+  if (Array.isArray(webpackConfig)) {
+    return webpackConfig.reduce((aliases, config) => {
+      const configAliases = getWebpackAliasesFromSingleConfig(config);
+      return Object.assign({}, aliases, configAliases);
+    }, {});
+  }
+
+  if (typeof webpackConfig === 'object') {
+    return getWebpackAliasesFromSingleConfig(webpackConfig);
+  }
+
+  throw new Error(`Expected Webpack config to be either an object or array, got: ${typeof webpackConfig}`);
+}
+
+function getWebpackAliasesFromSingleConfig(webpackConfig) {
   let alias = {};
+
   if (typeof webpackConfig.resolve === 'object') {
     if (typeof webpackConfig.resolve.alias === 'object') {
       alias = webpackConfig.resolve.alias;
